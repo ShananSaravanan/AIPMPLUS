@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # Load the new model
-model = joblib.load("FYP/TPM_RegressionModel/XGBoost/V2_Postgre/Model/xgboost_rul_spc_model.pkl")
+model = joblib.load("XGBoost/V2_Postgre/Model/xgboost_rul_spc_model.pkl")
 
 # Get the feature names from the trained model
 feature_names = model.get_booster().feature_names
