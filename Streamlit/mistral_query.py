@@ -5,14 +5,20 @@ from sqlalchemy.sql import text
 import re
 from datetime import timedelta
 
+
+
 def query_mistral(prompt):
-    res = requests.post("http://localhost:11434/api/generate", json={
+    url = "https://api.ollama.com/v1/chat/completions"
+    headers = {"Authorization": "1b2647305871410caa070517beaab326.ph6y2mtX4X9DwtnfnFtqoLhb"}  # Replace with your actual API key
+    data = {
         "model": "mistral",
-        "prompt": prompt,
-        "stream": False,
+        "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.5
-    })
-    return res.json()["response"]
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()  # Raises an HTTPError for bad responses
+    return response.json()["choices"][0]["message"]["content"]
+
 
 def get_machine_context(engine, machine_id):
     context_parts = [f"Context for Machine ID: {machine_id}\n"]
