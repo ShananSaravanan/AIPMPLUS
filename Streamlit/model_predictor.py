@@ -54,12 +54,12 @@ def predict_rul(data: pd.DataFrame) -> pd.DataFrame:
     # Return relevant columns
     return result[['machineid', 'datetime', 'rul_pred']]
 
-if __name__ == "__main__":
-    # Example usage (for testing)
-    sample_data = pd.DataFrame({
-        'machineid': [1], 'datetime': [pd.Timestamp.now()], 'volt': [158], 'rotate': [429.50],
-        'pressure': [94], 'vibration': [58], 'age': [18], 'time_since_last_maint': [0],
-        'no_maint': [1], 'error_count': [3], 'time_since_last_error': [24], 'no_error': [0]
-    })
-    result = predict_rul(sample_data)
-    print(result)
+# if __name__ == "__main__":
+#     # Example usage (for testing)
+#     sample_data = pd.DataFrame({
+#         'machineid': [1], 'datetime': [pd.Timestamp.now()], 'volt': [158], 'rotate': [429.50],
+#         'pressure': [94], 'vibration': [58], 'age': [18], 'time_since_last_maint': [0],
+#         'no_maint': [1], 'error_count': [3], 'time_since_last_error': [24], 'no_error': [0]
+#     })
+#     result = predict_rul(sample_data)
+#     print(result)
