@@ -10,7 +10,7 @@ from datetime import timedelta
 def query_mistral(prompt):
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {
-        "Authorization": "0igYebog3vd3Pvoh0HeyvkGeWEtkMuhY",  # paste your key here
+        "Authorization": "Bearer 0igYebog3vd3Pvoh0HeyvkGeWEtkMuhY",  # must include Bearer
         "Content-Type": "application/json"
     }
     data = {
