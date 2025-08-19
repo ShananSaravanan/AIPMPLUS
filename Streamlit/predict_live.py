@@ -86,6 +86,14 @@ def compute_derived_features(data):
         machines = pd.read_sql("SELECT machineid, model FROM machines", engine)
         data = data.merge(machines, on='machineid', how='left')
         data = pd.get_dummies(data, columns=['model'], prefix='model')
+    
+        # --- Add missing interaction features to match training ---
+    if 'volt_rotate' not in data.columns:
+        data['volt_rotate'] = data['volt'] * data['rotate']
+
+    if 'pressure_vibration' not in data.columns:
+        data['pressure_vibration'] = data['pressure'] * data['vibration']
+
 
     return data.reset_index(drop=True)  # Reset index to align data
 
