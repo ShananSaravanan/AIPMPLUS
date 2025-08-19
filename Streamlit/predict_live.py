@@ -5,7 +5,10 @@ from datetime import datetime
 import time
 import os
 from model_predictor import predict_rul
-import streamlit as st
+from fastapi import FastAPI
+import threading
+
+app = FastAPI()
 
 db_url = os.environ.get("db_url")        
 engine = create_engine(db_url)
@@ -86,27 +89,36 @@ def compute_derived_features(data):
 
     return data.reset_index(drop=True)  # Reset index to align data
 
-while True:
-    try:
-        # Fetch latest telemetry
-        telemetry = pd.read_sql("SELECT * FROM telemetry ORDER BY datetime DESC LIMIT 10", engine)
-        machines = pd.read_sql("SELECT * FROM machines", engine)
-        data = telemetry.merge(machines, on='machineid', how='left')
-        print(f"Initial columns after telemetry merge: {data.columns.tolist()}")  # Debug print
+def prediction_loop():
+    while True:
+        try:
+            # Fetch latest telemetry
+            telemetry = pd.read_sql("SELECT * FROM telemetry ORDER BY datetime DESC LIMIT 10", engine)
+            machines = pd.read_sql("SELECT * FROM machines", engine)
+            data = telemetry.merge(machines, on='machineid', how='left')
+            print(f"Initial columns after telemetry merge: {data.columns.tolist()}")
 
-        # Compute derived features
-        data = compute_derived_features(data)
+            # Compute derived features
+            data = compute_derived_features(data)
 
-        # Predict RUL
-        predictions_df = predict_rul(data)
-        predictions_df['prediction_time'] = datetime.now()
+            # Predict RUL
+            predictions_df = predict_rul(data)
+            predictions_df['prediction_time'] = datetime.now()
 
-        # Save predictions
-        predictions_df[['machineid', 'prediction_time', 'rul_pred']].to_sql(
-            'predictions', engine, if_exists='append', index=False
-        )
-        print("✅ Live prediction inserted.")
-    except Exception as e:
-        print("❌ Prediction failed:", e)
+            # Save predictions
+            predictions_df[['machineid', 'prediction_time', 'rul_pred']].to_sql(
+                'predictions', engine, if_exists='append', index=False
+            )
+            print("✅ Live prediction inserted.")
+        except Exception as e:
+            print("❌ Prediction failed:", e)
 
-    time.sleep(10)  # Adjust refresh rate
+        time.sleep(10)  # every 10s
+
+# Start background thread
+threading.Thread(target=prediction_loop, daemon=True).start()
+
+# Health check endpoint
+@app.get("/healthz")
+def healthz():
+    return {"status": "predict_live running"}
