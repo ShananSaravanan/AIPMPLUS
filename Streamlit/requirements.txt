@@ -1,4 +1,5 @@
 streamlit
+uvicorn[standard]
 pandas
 sqlalchemy
 psycopg2-binary
