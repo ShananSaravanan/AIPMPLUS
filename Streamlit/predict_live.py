@@ -3,11 +3,11 @@ import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
 import time
+import os
 from model_predictor import predict_rul
 import streamlit as st
 
-db_url = st.secrets["db_url"]
-
+db_url = os.environ.get("db_url")        
 engine = create_engine(db_url)
 def compute_derived_features(data):
     # Ensure datetime is in a consistent format
