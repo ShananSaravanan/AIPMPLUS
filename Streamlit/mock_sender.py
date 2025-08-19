@@ -40,6 +40,7 @@ import threading
 app = FastAPI()
 
 telemetry_url = os.getenv("telemetry_url")
+print(f"Using TELEMETRY_URL = {telemetry_url}")
 
 def send_loop():
     machine_ids = list(range(1, 101))
