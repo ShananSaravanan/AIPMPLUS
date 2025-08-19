@@ -8,15 +8,19 @@ from datetime import timedelta
 
 
 def query_mistral(prompt):
-    url = "https://api.ollama.com/v1/chat/completions"
-    headers = {"Authorization": "1b2647305871410caa070517beaab326.ph6y2mtX4X9DwtnfnFtqoLhb"}  # Replace with your actual API key
+    url = "https://api.mistral.ai/v1/chat/completions"
+    headers = {
+        "Authorization": "0igYebog3vd3Pvoh0HeyvkGeWEtkMuhY",  # paste your key here
+        "Content-Type": "application/json"
+    }
     data = {
-        "model": "mistral",
+        "model": "mistral-small-latest",  # or "mistral-medium-latest", "mistral-large-latest"
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.5
     }
+
     response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status()  # Raises an HTTPError for bad responses
+    response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"]
 
 
