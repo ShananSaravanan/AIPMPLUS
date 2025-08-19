@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from datetime import datetime
 import time
 import os
-from model_predictor import predict_rul
+from Streamlit.model_predictor import predict_rul
 from fastapi import FastAPI
 import threading
 
