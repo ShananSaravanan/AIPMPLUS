@@ -113,11 +113,13 @@ def prediction_loop():
             predictions_df = predict_rul(data)
             predictions_df['prediction_time'] = datetime.now()
 
+            # 🔹 Scale down RUL before saving (e.g., divide by 100)
+            predictions_df['rul_pred'] = predictions_df['rul_pred'] / 500  
+
             # Save predictions
-            predictions_df[['machineid', 'prediction_time', 'rul_pred']].to_sql(
-                'predictions', engine, if_exists='append', index=False
-            )
-            print("✅ Live prediction inserted.")
+            predictions_df[['machineid', 'prediction_time', 'rul_pred']].to_sql('predictions', engine, if_exists='append', index=False)
+            print("✅ Live prediction inserted (scaled RUL).")
+
         except Exception as e:
             print("❌ Prediction failed:", e)
 
