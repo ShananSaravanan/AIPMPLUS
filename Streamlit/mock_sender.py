@@ -10,7 +10,7 @@ import threading
 app = FastAPI()
 
 telemetry_url = os.getenv("telemetry_url")
-db_url = os.getenv("DATABASE_URL")  # store your Render DB URL here
+db_url = os.getenv("db_url")  # store your Render DB URL here
 
 print(f"Using TELEMETRY_URL = {telemetry_url}")
 print(f"Using DATABASE_URL = {db_url}")
