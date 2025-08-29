@@ -608,9 +608,38 @@ else:
                     st.metric("Last Maintenance", last_maintenance.strftime('%Y-%m-%d %H:%M:%S'))
                 else:
                     st.metric("Last Maintenance", "No record")
-        # Plot trend chart
         fig = px.line(rul_data, x="prediction_time", y="rul_pred", title="RUL Prediction Trend")
         st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("Average RUL Over Time")
+        @st.cache_data(ttl=60)
+        def get_average_rul_over_time():
+            query = "SELECT prediction_time, AVG(rul_pred) as avg_rul FROM predictions GROUP BY prediction_time ORDER BY prediction_time"
+            avg_rul_data = pd.read_sql(query, engine)
+            avg_rul_data["prediction_time"] = pd.to_datetime(avg_rul_data["prediction_time"])
+            return avg_rul_data
+        avg_rul_over_time = get_average_rul_over_time()
+        if not avg_rul_over_time.empty:
+            fig = px.line(avg_rul_over_time, x="prediction_time", y="avg_rul", title="Average RUL Over Time")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No RUL data available.")
+
+        st.subheader("RUL Distribution")
+        @st.cache_data(ttl=60)
+        def get_rul_distribution():
+            query = "SELECT machineid, rul_pred FROM predictions WHERE prediction_time = (SELECT MAX(prediction_time) FROM predictions)"
+            rul_dist = pd.read_sql(query, engine)
+            return rul_dist
+        rul_dist_data = get_rul_distribution()
+        if not rul_dist_data.empty:
+            # Check and send alerts for all machines in distribution
+            for _, row in rul_dist_data.iterrows():
+                check_and_send_alerts(row["machineid"], row["rul_pred"])
+            fig = px.bar(rul_dist_data, x="machineid", y="rul_pred", title="RUL Distribution")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No RUL data available.")
     # --------------------------- 
     # 🗓 Maintenance Scheduler
     # --------------------------- 
