@@ -608,7 +608,9 @@ else:
                     st.metric("Last Maintenance", last_maintenance.strftime('%Y-%m-%d %H:%M:%S'))
                 else:
                     st.metric("Last Maintenance", "No record")
-
+        # Plot trend chart
+        fig = px.line(rul_data, x="prediction_time", y="rul_pred", title="RUL Prediction Trend")
+        st.plotly_chart(fig, use_container_width=True)
     # --------------------------- 
     # 🗓 Maintenance Scheduler
     # --------------------------- 
