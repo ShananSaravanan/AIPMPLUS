@@ -833,23 +833,23 @@ else:
     # --------------------------- 
     if st.session_state.selected_menu not in ["Account 👤", "Configuration ⚙️"]:
         from mistral_query import build_prompt, query_mistral
-        components.html("""
-        <button id="chat-button" onclick="toggleChat()">💬</button>
-        <div id="chat-window">
-            <h4>🤖 AI Maintenance Assistant</h4>
-            <div id="chat-content"></div>
-        </div>
-        <script>
-        function toggleChat() {
-            var win = document.getElementById('chat-window');
-            if (win.style.display === 'none') {
-                win.style.display = 'block';
-            } else {
-                win.style.display = 'none';
-            }
-        }
-        </script>
-        """, height=0)
+        # components.html("""
+        # <button id="chat-button" onclick="toggleChat()">💬</button>
+        # <div id="chat-window">
+        #     <h4>🤖 AI Maintenance Assistant</h4>
+        #     <div id="chat-content"></div>
+        # </div>
+        # <script>
+        # function toggleChat() {
+        #     var win = document.getElementById('chat-window');
+        #     if (win.style.display === 'none') {
+        #         win.style.display = 'block';
+        #     } else {
+        #         win.style.display = 'none';
+        #     }
+        # }
+        # </script>
+        # """, height=0)
         st.write("## AI Assistant Chatbot")
         for sender, msg in st.session_state.chat_history:
             align = "user" if sender == "user" else "assistant"
