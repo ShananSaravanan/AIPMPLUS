@@ -548,64 +548,66 @@ else:
         selected_machine = st.selectbox("🔧 Select Machine", machine_ids)
         
         st.subheader(f"RUL Prediction Trend for Machine {selected_machine}")
+
         @st.cache_data(ttl=60)
         def get_rul_data(machine_id):
-            rul_query = text("SELECT prediction_time, rul_pred FROM predictions WHERE machineid = :machine_id ORDER BY prediction_time DESC LIMIT 2")
+            rul_query = text("""
+                SELECT prediction_time, rul_pred 
+                FROM predictions 
+                WHERE machineid = :machine_id 
+                ORDER BY prediction_time DESC LIMIT 2
+            """)
             rul_data = pd.read_sql(rul_query, engine, params={"machine_id": machine_id})
             rul_data["prediction_time"] = pd.to_datetime(rul_data["prediction_time"])
             return rul_data
 
+        @st.cache_data(ttl=60)
+        def get_last_maintenance(machine_id):
+            maint_query = text("""
+                SELECT MAX(datetime) as last_maint 
+                FROM maintenance 
+                WHERE machineid = :machine_id
+            """)
+            maint_data = pd.read_sql(maint_query, engine, params={"machine_id": machine_id})
+            if maint_data.iloc[0]["last_maint"] is not None:
+                return pd.to_datetime(maint_data.iloc[0]["last_maint"])
+            return None
+
         rul_data = get_rul_data(selected_machine)
+        last_maintenance = get_last_maintenance(selected_machine)
+
         if not rul_data.empty:
             recent_rul = rul_data.iloc[0]["rul_pred"]
+            recent_time = rul_data.iloc[0]["prediction_time"]
+
             # Check and send alerts for selected machine
             check_and_send_alerts(selected_machine, recent_rul)
-            col1, col2 = st.columns(2)
+
+            col1, col2, col3 = st.columns(3)
             with col1:
                 if len(rul_data) > 1:
                     last_rul = rul_data.iloc[1]["rul_pred"]
+                    last_time = rul_data.iloc[1]["prediction_time"]
                     rul_change = recent_rul - last_rul
                     st.metric("RUL Predicted", f"{recent_rul:.1f}", delta=f"{rul_change:+.1f}")
+                    st.caption(f"⏰ {recent_time.strftime('%Y-%m-%d %H:%M:%S')}")
                 else:
                     st.metric("RUL Predicted", f"{recent_rul:.1f}", delta="-")
+                    st.caption(f"⏰ {recent_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
             with col2:
                 if len(rul_data) > 1:
-                    st.metric("Last RUL", f"{last_rul}")
+                    st.metric("Last RUL", f"{last_rul:.1f}")
+                    st.caption(f"⏰ {last_time.strftime('%Y-%m-%d %H:%M:%S')}")
                 else:
                     st.metric("Last RUL", "-")
+                    st.caption("⏰ -")
 
-        fig = px.line(rul_data, x="prediction_time", y="rul_pred", title="RUL Prediction Trend")
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.subheader("Average RUL Over Time")
-        @st.cache_data(ttl=60)
-        def get_average_rul_over_time():
-            query = "SELECT prediction_time, AVG(rul_pred) as avg_rul FROM predictions GROUP BY prediction_time ORDER BY prediction_time"
-            avg_rul_data = pd.read_sql(query, engine)
-            avg_rul_data["prediction_time"] = pd.to_datetime(avg_rul_data["prediction_time"])
-            return avg_rul_data
-        avg_rul_over_time = get_average_rul_over_time()
-        if not avg_rul_over_time.empty:
-            fig = px.line(avg_rul_over_time, x="prediction_time", y="avg_rul", title="Average RUL Over Time")
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No RUL data available.")
-
-        st.subheader("RUL Distribution")
-        @st.cache_data(ttl=60)
-        def get_rul_distribution():
-            query = "SELECT machineid, rul_pred FROM predictions WHERE prediction_time = (SELECT MAX(prediction_time) FROM predictions)"
-            rul_dist = pd.read_sql(query, engine)
-            return rul_dist
-        rul_dist_data = get_rul_distribution()
-        if not rul_dist_data.empty:
-            # Check and send alerts for all machines in distribution
-            for _, row in rul_dist_data.iterrows():
-                check_and_send_alerts(row["machineid"], row["rul_pred"])
-            fig = px.bar(rul_dist_data, x="machineid", y="rul_pred", title="RUL Distribution")
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No RUL data available.")
+            with col3:
+                if last_maintenance:
+                    st.metric("Last Maintenance", last_maintenance.strftime('%Y-%m-%d %H:%M:%S'))
+                else:
+                    st.metric("Last Maintenance", "No record")
 
     # --------------------------- 
     # 🗓 Maintenance Scheduler
