@@ -470,7 +470,9 @@ else:
                 telemetry = pd.read_sql(query, engine, params=tuple(selected_machines))
                 corr_matrix = telemetry.corr()
                 fig = px.imshow(corr_matrix, text_auto=True, title="Correlation Heatmap")
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, height=200)
+                # --- FIX 1 ---
+                fig.update_layout(height=200, margin=dict(l=20, r=20, t=30, b=20))
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             else:
                 st.info("No machines selected.")
         with col3:
@@ -481,7 +483,9 @@ else:
                 maintenance_data = pd.read_sql(query, engine, params=tuple(selected_machines))
                 if not maintenance_data.empty:
                     fig = px.histogram(maintenance_data, x="machineid", color="comp", title="Maintenance Actions")
-                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, height=200)
+                    # --- FIX 2 ---
+                    fig.update_layout(height=200, margin=dict(l=20, r=20, t=30, b=20))
+                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                 else:
                     st.info("No maintenance history.")
             else:
@@ -511,17 +515,23 @@ else:
                            {'range': [30, 70], 'color': "orange"},
                            {'range': [70, 100], 'color': "green"}
                        ]}))
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, height=200)
+            # --- FIX 3 ---
+            fig.update_layout(height=200, margin=dict(l=20, r=20, t=30, b=20))
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
         with col2:
             st.subheader("Health Scores")
             fig = px.bar(health_scores, x="machineid", y="health_score", title="All Machines")
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, height=200)
+            # --- FIX 4 ---
+            fig.update_layout(height=200, margin=dict(l=20, r=20, t=30, b=20))
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
         with col3:
             st.subheader("Failure Risk")
             rul_data = pd.read_sql("SELECT prediction_time, AVG(rul_pred) as avg_rul FROM predictions GROUP BY prediction_time ORDER BY prediction_time", engine)
             rul_data["failure_risk"] = 100 * (1 - rul_data["avg_rul"] / rul_data["avg_rul"].max())
             fig = px.line(rul_data, x="prediction_time", y="failure_risk", title="Risk Trend")
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False}, height=200)
+            # --- FIX 5 ---
+            fig.update_layout(height=200, margin=dict(l=20, r=20, t=30, b=20))
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
     # --------------------------- 
     # 🔋 Live Telemetry
